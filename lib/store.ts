@@ -1,8 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Item } from './items';
+import { Item, Rarity } from './items';
 
 export type AnimationState = 'idle' | 'spinning' | 'revealing' | 'inspecting';
+
+export interface ActiveReward {
+  type: 'drop_rate_boost' | 'guaranteed_drop';
+  value: number | Rarity;
+  expiresAt: string;
+  description: string;
+}
 
 interface AppState {
   // Case opening state
@@ -22,6 +29,12 @@ interface AppState {
   inventory: Item[];
   totalCasesOpened: number;
 
+  // Missions & Rewards
+  completedMissions: string[];
+  unlockedSpecialItems: string[];
+  activeRewards: ActiveReward[];
+  pendingReward: { missionId: string; missionTitle: string } | null;
+
   // Actions
   setAnimationState: (state: AnimationState) => void;
   setCurrentItem: (item: Item | null) => void;
@@ -34,6 +47,16 @@ interface AppState {
   addToInventory: (item: Item) => void;
   updateStreak: () => void;
   resetDailyCases: () => void;
+
+  // Mission actions
+  completeMission: (missionId: string, missionTitle: string) => void;
+  claimReward: (reward: { type: string; value: string | number; description: string }) => void;
+  clearPendingReward: () => void;
+  addFreeCases: (amount: number) => void;
+  addActiveReward: (reward: ActiveReward) => void;
+  cleanupExpiredRewards: () => void;
+  getActiveDropBoost: () => number;
+  getGuaranteedDrop: () => Rarity | null;
 
   // Reset for new case
   resetForNewCase: () => void;
@@ -87,6 +110,10 @@ export const useStore = create<AppState>()(
       nearMissMessage: null,
       inventory: [],
       totalCasesOpened: 0,
+      completedMissions: [],
+      unlockedSpecialItems: [],
+      activeRewards: [],
+      pendingReward: null,
 
       // Setters
       setAnimationState: (state) => set({ currentAnimation: state }),
@@ -145,6 +172,94 @@ export const useStore = create<AppState>()(
         }
       },
 
+      // Mission actions
+      completeMission: (missionId, missionTitle) => {
+        const state = get();
+        if (!state.completedMissions.includes(missionId)) {
+          set({
+            completedMissions: [...state.completedMissions, missionId],
+            pendingReward: { missionId, missionTitle },
+          });
+        }
+      },
+
+      claimReward: (reward) => {
+        const state = get();
+
+        if (reward.type === 'extra_cases') {
+          state.addFreeCases(Number(reward.value));
+        } else if (reward.type === 'guaranteed_drop') {
+          const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24h
+          state.addActiveReward({
+            type: 'guaranteed_drop',
+            value: reward.value as Rarity,
+            expiresAt,
+            description: reward.description,
+          });
+        } else if (reward.type === 'drop_rate_boost') {
+          const hours = reward.value === 50 ? 48 : 24;
+          const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+          state.addActiveReward({
+            type: 'drop_rate_boost',
+            value: Number(reward.value),
+            expiresAt,
+            description: reward.description,
+          });
+        } else if (reward.type === 'unlock_item') {
+          set((state) => ({
+            unlockedSpecialItems: [...state.unlockedSpecialItems, String(reward.value)],
+          }));
+        }
+
+        state.clearPendingReward();
+      },
+
+      clearPendingReward: () => {
+        set({ pendingReward: null });
+      },
+
+      addFreeCases: (amount) => {
+        set((state) => ({
+          casesRemaining: state.casesRemaining + amount,
+        }));
+      },
+
+      addActiveReward: (reward) => {
+        set((state) => ({
+          activeRewards: [...state.activeRewards, reward],
+        }));
+      },
+
+      cleanupExpiredRewards: () => {
+        const now = new Date().toISOString();
+        set((state) => ({
+          activeRewards: state.activeRewards.filter((reward) => reward.expiresAt > now),
+        }));
+      },
+
+      getActiveDropBoost: () => {
+        const state = get();
+        state.cleanupExpiredRewards();
+
+        const boostReward = state.activeRewards.find((r) => r.type === 'drop_rate_boost');
+        return boostReward ? Number(boostReward.value) : 0;
+      },
+
+      getGuaranteedDrop: () => {
+        const state = get();
+        state.cleanupExpiredRewards();
+
+        const guaranteedReward = state.activeRewards.find((r) => r.type === 'guaranteed_drop');
+        if (guaranteedReward) {
+          // Remove the reward after using it
+          set((state) => ({
+            activeRewards: state.activeRewards.filter((r) => r !== guaranteedReward),
+          }));
+          return guaranteedReward.value as Rarity;
+        }
+        return null;
+      },
+
       // Reset state for a new case opening
       resetForNewCase: () => {
         set({
@@ -166,6 +281,9 @@ export const useStore = create<AppState>()(
         streak: state.streak,
         inventory: state.inventory,
         totalCasesOpened: state.totalCasesOpened,
+        completedMissions: state.completedMissions,
+        unlockedSpecialItems: state.unlockedSpecialItems,
+        activeRewards: state.activeRewards,
       }),
     }
   )

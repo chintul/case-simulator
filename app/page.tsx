@@ -20,6 +20,9 @@ import DopamineBar from './components/DopamineBar';
 import DailyStreak from './components/DailyStreak';
 import NearMissIndicator from './components/NearMissIndicator';
 import ItemInspector from './components/ItemInspector';
+import Missions from './components/Missions';
+import MissionRewardModal from './components/MissionRewardModal';
+import { MISSIONS, getMissionProgress, isMissionCompleted } from '@/lib/missions';
 
 export default function Home() {
   const {
@@ -30,6 +33,9 @@ export default function Home() {
     commentary,
     nearMissMessage,
     streak,
+    totalCasesOpened,
+    inventory,
+    completedMissions,
     setAnimationState,
     setCurrentItem,
     setConveyorItems,
@@ -41,6 +47,9 @@ export default function Home() {
     updateStreak,
     resetDailyCases,
     resetForNewCase,
+    completeMission,
+    getActiveDropBoost,
+    getGuaranteedDrop,
   } = useStore();
 
   const [inspectorOpen, setInspectorOpen] = useState(false);
@@ -65,10 +74,18 @@ export default function Home() {
     // Start animation
     setAnimationState('spinning');
 
+    // Check for mission guaranteed drops
+    const missionGuaranteed = getGuaranteedDrop();
+
     // Roll for item
     const streakBonus = getStreakBonus(streak);
+    const missionDropBoost = getActiveDropBoost();
+    const totalBonus = streakBonus + missionDropBoost;
+
     const guaranteedEpic = shouldGetGuaranteedEpic(streak);
-    const item = rollItem(streakBonus, guaranteedEpic ? 'epic' : undefined);
+    const guaranteedRarity = missionGuaranteed || (guaranteedEpic ? 'epic' : undefined);
+
+    const item = rollItem(totalBonus, guaranteedRarity);
 
     // Generate conveyor with near-miss logic
     const enableNearMiss = item.rarity === 'common' || item.rarity === 'uncommon';
@@ -96,7 +113,20 @@ export default function Home() {
     // Add to inventory after reveal
     if (currentItem) {
       addToInventory(currentItem);
+
+      // Check for completed missions
+      setTimeout(() => checkMissionCompletion(), 500);
     }
+  };
+
+  const checkMissionCompletion = () => {
+    const stats = { totalCasesOpened, streak, inventory };
+
+    MISSIONS.forEach((mission) => {
+      if (!completedMissions.includes(mission.id) && isMissionCompleted(mission, stats)) {
+        completeMission(mission.id, mission.title);
+      }
+    });
   };
 
   const handleInspect = () => {
@@ -137,6 +167,12 @@ export default function Home() {
 
       {/* Dopamine Bar */}
       <DopamineBar />
+
+      {/* Missions Panel */}
+      <Missions />
+
+      {/* Mission Reward Modal */}
+      <MissionRewardModal />
 
       {/* Main content */}
       <main className="relative z-10 container mx-auto px-4 py-8">
