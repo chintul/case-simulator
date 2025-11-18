@@ -22,7 +22,11 @@ import NearMissIndicator from './components/NearMissIndicator';
 import ItemInspector from './components/ItemInspector';
 import Missions from './components/Missions';
 import MissionRewardModal from './components/MissionRewardModal';
+import LevelDisplay from './components/LevelDisplay';
+import Leaderboard from './components/Leaderboard';
+import PrestigeModal from './components/PrestigeModal';
 import { MISSIONS, getMissionProgress, isMissionCompleted } from '@/lib/missions';
+import { calculateCaseXP, canPrestige, getXPProgressInLevel } from '@/lib/prestige';
 
 export default function Home() {
   const {
@@ -36,6 +40,8 @@ export default function Home() {
     totalCasesOpened,
     inventory,
     completedMissions,
+    totalXP,
+    prestigeLevel,
     setAnimationState,
     setCurrentItem,
     setConveyorItems,
@@ -50,9 +56,12 @@ export default function Home() {
     completeMission,
     getActiveDropBoost,
     getGuaranteedDrop,
+    addXP,
+    getPrestigeBonus,
   } = useStore();
 
   const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [prestigeModalOpen, setPrestigeModalOpen] = useState(false);
 
   // Initialize on mount
   useEffect(() => {
@@ -77,10 +86,11 @@ export default function Home() {
     // Check for mission guaranteed drops
     const missionGuaranteed = getGuaranteedDrop();
 
-    // Roll for item
+    // Roll for item with all bonuses
     const streakBonus = getStreakBonus(streak);
     const missionDropBoost = getActiveDropBoost();
-    const totalBonus = streakBonus + missionDropBoost;
+    const prestigeBonus = getPrestigeBonus();
+    const totalBonus = streakBonus + missionDropBoost + prestigeBonus;
 
     const guaranteedEpic = shouldGetGuaranteedEpic(streak);
     const guaranteedRarity = missionGuaranteed || (guaranteedEpic ? 'epic' : undefined);
@@ -114,8 +124,20 @@ export default function Home() {
     if (currentItem) {
       addToInventory(currentItem);
 
+      // Add XP based on rarity
+      const xpGained = calculateCaseXP(currentItem.rarity, streak);
+      addXP(xpGained);
+
       // Check for completed missions
       setTimeout(() => checkMissionCompletion(), 500);
+
+      // Check if can prestige (after level up)
+      setTimeout(() => {
+        const xpProgress = getXPProgressInLevel(totalXP + xpGained);
+        if (canPrestige(xpProgress.currentLevel, prestigeLevel)) {
+          setPrestigeModalOpen(true);
+        }
+      }, 1000);
     }
   };
 
@@ -173,6 +195,15 @@ export default function Home() {
 
       {/* Mission Reward Modal */}
       <MissionRewardModal />
+
+      {/* Level Display */}
+      <LevelDisplay />
+
+      {/* Leaderboard */}
+      <Leaderboard />
+
+      {/* Prestige Modal */}
+      <PrestigeModal isOpen={prestigeModalOpen} onClose={() => setPrestigeModalOpen(false)} />
 
       {/* Main content */}
       <main className="relative z-10 container mx-auto px-4 py-8">

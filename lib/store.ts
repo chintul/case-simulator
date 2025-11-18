@@ -35,6 +35,11 @@ interface AppState {
   activeRewards: ActiveReward[];
   pendingReward: { missionId: string; missionTitle: string } | null;
 
+  // Prestige & Levels
+  totalXP: number;
+  prestigeLevel: number;
+  username: string;
+
   // Actions
   setAnimationState: (state: AnimationState) => void;
   setCurrentItem: (item: Item | null) => void;
@@ -57,6 +62,12 @@ interface AppState {
   cleanupExpiredRewards: () => void;
   getActiveDropBoost: () => number;
   getGuaranteedDrop: () => Rarity | null;
+
+  // Prestige actions
+  addXP: (amount: number) => void;
+  performPrestige: () => void;
+  setUsername: (name: string) => void;
+  getPrestigeBonus: () => number;
 
   // Reset for new case
   resetForNewCase: () => void;
@@ -114,6 +125,9 @@ export const useStore = create<AppState>()(
       unlockedSpecialItems: [],
       activeRewards: [],
       pendingReward: null,
+      totalXP: 0,
+      prestigeLevel: 0,
+      username: 'Player',
 
       // Setters
       setAnimationState: (state) => set({ currentAnimation: state }),
@@ -260,6 +274,36 @@ export const useStore = create<AppState>()(
         return null;
       },
 
+      // Prestige actions
+      addXP: (amount) => {
+        set((state) => ({
+          totalXP: state.totalXP + amount,
+        }));
+      },
+
+      performPrestige: () => {
+        const state = get();
+        set({
+          prestigeLevel: state.prestigeLevel + 1,
+          totalXP: 0,
+          casesRemaining: DAILY_FREE_CASES + state.prestigeLevel + 1, // Bonus cases
+          // Reset progress but keep unlocks
+          completedMissions: [],
+          activeRewards: [],
+        });
+      },
+
+      setUsername: (name) => {
+        set({ username: name });
+      },
+
+      getPrestigeBonus: () => {
+        const state = get();
+        // Import prestige bonus calculation
+        const { calculatePrestigeBonus } = require('./prestige');
+        return calculatePrestigeBonus(state.prestigeLevel);
+      },
+
       // Reset state for a new case opening
       resetForNewCase: () => {
         set({
@@ -284,6 +328,9 @@ export const useStore = create<AppState>()(
         completedMissions: state.completedMissions,
         unlockedSpecialItems: state.unlockedSpecialItems,
         activeRewards: state.activeRewards,
+        totalXP: state.totalXP,
+        prestigeLevel: state.prestigeLevel,
+        username: state.username,
       }),
     }
   )
