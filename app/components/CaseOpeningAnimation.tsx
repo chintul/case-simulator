@@ -21,7 +21,7 @@ export default function CaseOpeningAnimation({
   const [isAnimating, setIsAnimating] = useState(false);
   const tickIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const ITEM_WIDTH = 180; // Width of each item card
+  const ITEM_WIDTH = 200; // Width of each item card
   const VIEWPORT_CENTER = typeof window !== 'undefined' ? window.innerWidth / 2 : 800;
 
   useEffect(() => {
@@ -120,66 +120,66 @@ export default function CaseOpeningAnimation({
   };
 
   return (
-    <div className="relative w-full h-64 overflow-hidden">
+    <div className="relative w-full h-72 overflow-hidden px-8">
       {/* Center indicator line */}
       <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-cyan-400 z-20 shadow-[0_0_20px_rgba(0,255,242,0.8)]" />
 
       {/* Gradient overlays for edge fade */}
-      <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#0a0a0f] to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#0a0a0f] to-transparent z-10 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-48 bg-gradient-to-r from-[#0a0a0f] to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-48 bg-gradient-to-l from-[#0a0a0f] to-transparent z-10 pointer-events-none" />
 
       {/* Conveyor belt */}
       <motion.div
-        className="flex items-center h-full absolute"
+        className="flex items-center h-full absolute gap-4"
         initial={{ x: 0 }}
         animate={controls}
         style={{
-          filter: isAnimating ? 'blur(2px)' : 'blur(0px)',
+          filter: isAnimating ? 'blur(1px)' : 'blur(0px)',
           willChange: 'transform',
         }}
       >
         {items.map((item, index) => (
           <motion.div
             key={`${item.id}-${index}`}
-            className="flex-shrink-0 mx-2"
+            className="flex-shrink-0"
             style={{ width: ITEM_WIDTH }}
-            initial={{ opacity: 0.7 }}
+            initial={{ opacity: 0.8 }}
             animate={{
-              opacity: index === winningIndex && !isAnimating ? 1 : 0.7,
-              scale: index === winningIndex && !isAnimating ? 1.1 : 1,
+              opacity: index === winningIndex && !isAnimating ? 1 : 0.8,
+              scale: index === winningIndex && !isAnimating ? 1.05 : 1,
             }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             {/* Item card */}
             <div
-              className="relative h-56 rounded-xl border-2 backdrop-blur-sm overflow-hidden"
+              className="relative h-64 rounded-xl border-2 backdrop-blur-sm overflow-hidden transition-all duration-200"
               style={{
                 borderColor: RARITY_COLORS[item.rarity],
-                backgroundColor: `${RARITY_GLOW_COLORS[item.rarity]}15`,
-                boxShadow: `0 0 30px ${RARITY_GLOW_COLORS[item.rarity]}`,
+                backgroundColor: `${RARITY_GLOW_COLORS[item.rarity]}20`,
+                boxShadow: `0 0 24px ${RARITY_GLOW_COLORS[item.rarity]}`,
               }}
             >
               {/* Rarity glow */}
               <div
-                className="absolute inset-0 opacity-30 blur-xl"
+                className="absolute inset-0 opacity-20 blur-2xl"
                 style={{
                   background: `radial-gradient(circle, ${RARITY_GLOW_COLORS[item.rarity]} 0%, transparent 70%)`,
                 }}
               />
 
               {/* Content */}
-              <div className="relative z-10 flex flex-col items-center justify-center h-full p-4">
+              <div className="relative z-10 flex flex-col items-center justify-center h-full p-5">
                 {/* Item emoji */}
-                <div className="text-6xl mb-3">{item.image}</div>
+                <div className="text-7xl mb-4">{item.image}</div>
 
                 {/* Item name */}
-                <div className="text-center text-white font-semibold text-sm line-clamp-2 mb-2">
+                <div className="text-center text-white font-semibold text-sm line-clamp-2 mb-3 px-2">
                   {item.name}
                 </div>
 
                 {/* Rarity badge */}
                 <div
-                  className="text-xs uppercase font-bold px-3 py-1 rounded-full"
+                  className="text-xs uppercase font-bold px-4 py-1.5 rounded-full"
                   style={{
                     backgroundColor: RARITY_COLORS[item.rarity],
                     color: '#000',

@@ -13,7 +13,7 @@ export default function CaseDisplay({ onOpenCase }: CaseDisplayProps) {
   const isDisabled = currentAnimation !== 'idle' || casesRemaining <= 0;
 
   return (
-    <div className="flex flex-col items-center justify-center gap-8">
+    <div className="flex flex-col items-center justify-center gap-12">
       {/* 3D Glowing Case */}
       <motion.div
         className="relative cursor-pointer"
@@ -24,7 +24,6 @@ export default function CaseDisplay({ onOpenCase }: CaseDisplayProps) {
           currentAnimation === 'idle'
             ? {
                 y: [0, -10, 0],
-                rotateY: [0, 5, 0, -5, 0],
               }
             : {}
         }
@@ -35,10 +34,10 @@ export default function CaseDisplay({ onOpenCase }: CaseDisplayProps) {
         }}
       >
         {/* Glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-magenta-500 to-cyan-500 opacity-50 blur-3xl animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-magenta-500 to-cyan-500 opacity-40 blur-3xl" />
 
         {/* Case box */}
-        <div className="relative w-64 h-64 md:w-80 md:h-80">
+        <div className="relative w-72 h-72 md:w-96 md:h-96">
           {/* Front face */}
           <div
             className="absolute inset-0 bg-gradient-to-br from-cyan-400/20 to-magenta-400/20 border-2 border-cyan-400 rounded-2xl backdrop-blur-sm"
@@ -50,9 +49,9 @@ export default function CaseDisplay({ onOpenCase }: CaseDisplayProps) {
             {/* Case emoji */}
             <div className="flex items-center justify-center h-full">
               <motion.div
-                className="text-8xl md:text-9xl"
+                className="text-9xl md:text-[10rem]"
                 animate={{
-                  scale: [1, 1.1, 1],
+                  scale: [1, 1.05, 1],
                 }}
                 transition={{
                   duration: 2,
@@ -63,38 +62,6 @@ export default function CaseDisplay({ onOpenCase }: CaseDisplayProps) {
                 📦
               </motion.div>
             </div>
-
-            {/* Particle effects */}
-            <motion.div
-              className="absolute inset-0 pointer-events-none"
-              animate={{
-                opacity: [0.3, 0.7, 0.3],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-              }}
-            >
-              {[...Array(6)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-2 h-2 bg-cyan-400 rounded-full"
-                  style={{
-                    top: `${Math.random() * 100}%`,
-                    left: `${Math.random() * 100}%`,
-                  }}
-                  animate={{
-                    scale: [0, 1, 0],
-                    opacity: [0, 1, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.3,
-                  }}
-                />
-              ))}
-            </motion.div>
           </div>
         </div>
       </motion.div>
@@ -104,9 +71,9 @@ export default function CaseDisplay({ onOpenCase }: CaseDisplayProps) {
         onClick={onOpenCase}
         disabled={isDisabled}
         className={`
-          relative px-12 py-4 text-2xl font-bold uppercase tracking-wider
+          relative px-16 py-5 text-2xl font-bold uppercase tracking-wider
           bg-gradient-to-r from-cyan-500 to-magenta-500
-          text-white rounded-lg
+          text-white rounded-xl
           transition-all duration-300
           ${
             isDisabled
@@ -116,24 +83,9 @@ export default function CaseDisplay({ onOpenCase }: CaseDisplayProps) {
         `}
         whileHover={!isDisabled ? { scale: 1.05 } : {}}
         whileTap={!isDisabled ? { scale: 0.95 } : {}}
-        animate={
-          !isDisabled
-            ? {
-                boxShadow: [
-                  '0 0 20px rgba(0, 255, 242, 0.5)',
-                  '0 0 40px rgba(255, 0, 255, 0.5)',
-                  '0 0 20px rgba(0, 255, 242, 0.5)',
-                ],
-              }
-            : {}
-        }
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-        }}
       >
         {/* Button glow */}
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-magenta-500 opacity-50 blur-xl rounded-lg" />
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-magenta-500 opacity-40 blur-xl rounded-xl" />
 
         <span className="relative z-10">
           {isDisabled ? (casesRemaining <= 0 ? 'NO CASES LEFT' : 'OPENING...') : 'OPEN CASE'}
@@ -142,15 +94,15 @@ export default function CaseDisplay({ onOpenCase }: CaseDisplayProps) {
 
       {/* Cases remaining counter */}
       <motion.div
-        className="text-center"
+        className="text-center mt-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <div className="text-sm text-cyan-400 uppercase tracking-wider mb-2">Free Cases Remaining</div>
-        <div className="text-5xl font-bold text-white">
+        <div className="text-sm text-cyan-400 uppercase tracking-wider mb-3">Free Cases Remaining</div>
+        <div className="text-6xl font-bold text-white">
           {casesRemaining}
-          <span className="text-2xl text-gray-400">/3</span>
+          <span className="text-3xl text-gray-400 ml-1">/3</span>
         </div>
       </motion.div>
     </div>

@@ -7,7 +7,6 @@ import {
   generateConveyor,
   calculateDopamineLevel,
   getCommentary,
-  getNearMissMessage,
   shouldGetGuaranteedEpic,
   getStreakBonus,
 } from '@/lib/rarity';
@@ -18,7 +17,6 @@ import CaseOpeningAnimation from './components/CaseOpeningAnimation';
 import ItemReveal from './components/ItemReveal';
 import DopamineBar from './components/DopamineBar';
 import DailyStreak from './components/DailyStreak';
-import NearMissIndicator from './components/NearMissIndicator';
 import ItemInspector from './components/ItemInspector';
 import Missions from './components/Missions';
 import MissionRewardModal from './components/MissionRewardModal';
@@ -35,7 +33,6 @@ export default function Home() {
     conveyorItems,
     dopamineLevel,
     commentary,
-    nearMissMessage,
     streak,
     totalCasesOpened,
     inventory,
@@ -47,7 +44,6 @@ export default function Home() {
     setConveyorItems,
     setDopamineLevel,
     setCommentary,
-    setNearMissMessage,
     openCase,
     addToInventory,
     updateStreak,
@@ -111,10 +107,6 @@ export default function Home() {
     // Generate commentary
     const message = getCommentary(item.rarity);
     setCommentary(message);
-
-    // Near-miss message
-    const nearMiss = getNearMissMessage(item.rarity);
-    setNearMissMessage(nearMiss);
   };
 
   const handleAnimationComplete = () => {
@@ -173,8 +165,8 @@ export default function Home() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 pt-8 pb-4 text-center">
-        <h1 className="text-5xl md:text-7xl font-black uppercase tracking-wider mb-2">
+      <header className="relative z-10 pt-12 pb-8 text-center px-6">
+        <h1 className="text-5xl md:text-7xl font-black uppercase tracking-wider mb-4">
           <span className="bg-gradient-to-r from-cyan-400 via-magenta-400 to-cyan-400 bg-clip-text text-transparent">
             Life Upgrade
           </span>
@@ -206,17 +198,17 @@ export default function Home() {
       <PrestigeModal isOpen={prestigeModalOpen} onClose={() => setPrestigeModalOpen(false)} />
 
       {/* Main content */}
-      <main className="relative z-10 container mx-auto px-4 py-8">
+      <main className="relative z-10 container mx-auto px-6 py-12 max-w-7xl">
         {/* Idle state: Show case */}
         {currentAnimation === 'idle' && (
-          <div className="flex items-center justify-center min-h-[70vh]">
+          <div className="flex items-center justify-center min-h-[75vh] py-16">
             <CaseDisplay onOpenCase={handleOpenCase} />
           </div>
         )}
 
         {/* Spinning state: Show animation */}
         {currentAnimation === 'spinning' && conveyorItems && (
-          <div className="flex items-center justify-center min-h-[70vh]">
+          <div className="flex items-center justify-center min-h-[75vh] py-16">
             <CaseOpeningAnimation
               items={conveyorItems}
               onComplete={handleAnimationComplete}
@@ -226,17 +218,16 @@ export default function Home() {
 
         {/* Revealing state: Show item */}
         {currentAnimation === 'revealing' && currentItem && (
-          <ItemReveal
-            item={currentItem}
-            commentary={commentary}
-            onInspect={handleInspect}
-            onOpenAnother={handleOpenAnother}
-          />
+          <div className="py-16">
+            <ItemReveal
+              item={currentItem}
+              commentary={commentary}
+              onInspect={handleInspect}
+              onOpenAnother={handleOpenAnother}
+            />
+          </div>
         )}
       </main>
-
-      {/* Near-miss indicator */}
-      <NearMissIndicator message={nearMissMessage} />
 
       {/* Item inspector modal */}
       <ItemInspector
@@ -246,7 +237,7 @@ export default function Home() {
       />
 
       {/* Footer */}
-      <footer className="relative z-10 text-center py-8 text-gray-500 text-sm">
+      <footer className="relative z-10 text-center py-12 px-6 text-gray-500 text-sm mt-8">
         <p>
           Made with 💀 by capitalism enthusiasts •{' '}
           <button

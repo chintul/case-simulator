@@ -23,7 +23,6 @@ interface AppState {
   conveyorItems: Item[] | null;
   dopamineLevel: number;
   commentary: string;
-  nearMissMessage: string | null;
 
   // Inventory
   inventory: Item[];
@@ -46,7 +45,6 @@ interface AppState {
   setConveyorItems: (items: Item[] | null) => void;
   setDopamineLevel: (level: number) => void;
   setCommentary: (message: string) => void;
-  setNearMissMessage: (message: string | null) => void;
 
   openCase: () => void;
   addToInventory: (item: Item) => void;
@@ -118,7 +116,6 @@ export const useStore = create<AppState>()(
       conveyorItems: null,
       dopamineLevel: 0,
       commentary: '',
-      nearMissMessage: null,
       inventory: [],
       totalCasesOpened: 0,
       completedMissions: [],
@@ -135,7 +132,6 @@ export const useStore = create<AppState>()(
       setConveyorItems: (items) => set({ conveyorItems: items }),
       setDopamineLevel: (level) => set({ dopamineLevel: level }),
       setCommentary: (message) => set({ commentary: message }),
-      setNearMissMessage: (message) => set({ nearMissMessage: message }),
 
       // Open a case (decrements counter)
       openCase: () => {
@@ -311,7 +307,6 @@ export const useStore = create<AppState>()(
           conveyorItems: null,
           dopamineLevel: 0,
           commentary: '',
-          nearMissMessage: null,
           currentAnimation: 'idle',
         });
       },
