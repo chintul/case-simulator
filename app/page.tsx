@@ -23,6 +23,9 @@ import MissionRewardModal from './components/MissionRewardModal';
 import LevelDisplay from './components/LevelDisplay';
 import Leaderboard from './components/Leaderboard';
 import PrestigeModal from './components/PrestigeModal';
+import ActiveBonuses from './components/ActiveBonuses';
+import XPToast from './components/XPToast';
+import NextCaseTimer from './components/NextCaseTimer';
 import { MISSIONS, getMissionProgress, isMissionCompleted } from '@/lib/missions';
 import { calculateCaseXP, canPrestige, getXPProgressInLevel } from '@/lib/prestige';
 
@@ -58,6 +61,8 @@ export default function Home() {
 
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [prestigeModalOpen, setPrestigeModalOpen] = useState(false);
+  const [showXPToast, setShowXPToast] = useState(false);
+  const [lastXPGained, setLastXPGained] = useState(0);
 
   // Initialize on mount
   useEffect(() => {
@@ -119,6 +124,10 @@ export default function Home() {
       // Add XP based on rarity
       const xpGained = calculateCaseXP(currentItem.rarity, streak);
       addXP(xpGained);
+
+      // Show XP toast
+      setLastXPGained(xpGained);
+      setShowXPToast(true);
 
       // Check for completed missions
       setTimeout(() => checkMissionCompletion(), 500);
@@ -197,6 +206,15 @@ export default function Home() {
       {/* Prestige Modal */}
       <PrestigeModal isOpen={prestigeModalOpen} onClose={() => setPrestigeModalOpen(false)} />
 
+      {/* Active Bonuses */}
+      <ActiveBonuses />
+
+      {/* XP Toast Notification */}
+      <XPToast xpGained={lastXPGained} show={showXPToast} onHide={() => setShowXPToast(false)} />
+
+      {/* Next Case Timer */}
+      <NextCaseTimer />
+
       {/* Main content */}
       <main className="relative z-10 container mx-auto px-6 py-12 max-w-7xl">
         {/* Idle state: Show case */}
@@ -224,6 +242,8 @@ export default function Home() {
               commentary={commentary}
               onInspect={handleInspect}
               onOpenAnother={handleOpenAnother}
+              xpGained={lastXPGained}
+              totalItems={inventory.length}
             />
           </div>
         )}

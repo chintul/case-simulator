@@ -11,9 +11,11 @@ interface ItemRevealProps {
   commentary: string;
   onInspect: () => void;
   onOpenAnother: () => void;
+  xpGained?: number;
+  totalItems?: number;
 }
 
-export default function ItemReveal({ item, commentary, onInspect, onOpenAnother }: ItemRevealProps) {
+export default function ItemReveal({ item, commentary, onInspect, onOpenAnother, xpGained = 0, totalItems = 0 }: ItemRevealProps) {
   useEffect(() => {
     // Play reveal sound based on rarity
     soundManager?.playReveal(item.rarity);
@@ -80,6 +82,19 @@ export default function ItemReveal({ item, commentary, onInspect, onOpenAnother 
             {item.rarity}
           </motion.div>
 
+          {/* XP Badge */}
+          {xpGained > 0 && (
+            <motion.div
+              className="absolute top-4 left-4 px-3 py-2 rounded-full text-xs font-bold uppercase z-20 bg-gradient-to-r from-cyan-500 to-magenta-500 text-white flex items-center gap-1"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: 'spring' }}
+            >
+              <span>⭐</span>
+              <span>+{xpGained} XP</span>
+            </motion.div>
+          )}
+
           {/* Content */}
           <div className="relative z-10 p-8 flex flex-col items-center">
             {/* Item emoji */}
@@ -105,7 +120,27 @@ export default function ItemReveal({ item, commentary, onInspect, onOpenAnother 
             <div className="text-cyan-400 uppercase text-sm tracking-wider mb-4">{item.category}</div>
 
             {/* Description */}
-            <p className="text-gray-300 text-center text-sm mb-6 max-w-sm">{item.description}</p>
+            <p className="text-gray-300 text-center text-sm mb-4 max-w-sm">{item.description}</p>
+
+            {/* Stats */}
+            {totalItems > 0 && (
+              <motion.div
+                className="flex gap-4 mb-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+              >
+                <div className="text-center">
+                  <div className="text-gray-400 text-xs uppercase">Total Items</div>
+                  <div className="text-white text-lg font-bold">{totalItems}</div>
+                </div>
+                <div className="w-px bg-gray-700" />
+                <div className="text-center">
+                  <div className="text-gray-400 text-xs uppercase">Rarity</div>
+                  <div className="text-white text-lg font-bold capitalize">{item.rarity}</div>
+                </div>
+              </motion.div>
+            )}
 
             {/* Divider */}
             <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent mb-6" />
